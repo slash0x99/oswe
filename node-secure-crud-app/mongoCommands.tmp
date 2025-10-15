@@ -1,0 +1,13 @@
+db.createUser({
+  user: "blogUser",
+  pwd: "Test123",
+  roles: [
+    {
+      role: "readWrite",
+      db: "blogDB"
+    }
+  ]
+})
+
+
+mongodb://blogUser:Test123@172.28.212.58:27017/blogDB?authSource=blogDB
