@@ -10,6 +10,6 @@ router.delete('/blog/delete/:uuid',blogController.deleteBlog)
 
 //COMMENTS
 router.post('/blog/comment',blogController.postComment)
-router.delete('/blog/delete/comment/:uuid',blogController.deleteComment)
+router.delete('/blog/comment',blogController.deleteComment)
 
 module.exports=router

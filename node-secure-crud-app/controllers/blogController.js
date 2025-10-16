@@ -127,12 +127,79 @@ async function deleteBlog(req,res){
 
 
 //COMMENTS
-function postComment(req,res){
-    return res.send('ok')
+async function postComment(req,res){
+
+    try{
+        const {text,uuid} = req.body
+        var username = 'test'
+
+        const comment = {
+            'text':text,
+            'username':username,
+            'commentId':uuidv4()
+        }
+
+        const blog = await Blog.findOne({'uuid':uuid})
+        if(!blog){
+            blog.comments = [];
+            return res.status(404).json({
+                'message':'No blog found,for commenting.!'
+            })
+        }
+
+        blog.comments.push(comment)
+        await blog.save();
+
+        return res.status(200).json({
+            'message':'Comment sent successfuly!'
+        })
+    }
+
+    catch (error) {
+        return res.status(500).json({
+            'message':`Err: ${error}`
+        })
+    }
+
+
 }
 
-function deleteComment(req,res){
-    return res.send('ok')
+async function deleteComment(req,res){
+    try{
+        console.log('deng')
+        const {uuid,commentId} = req.body
+        const blog = await Blog.findOne({'uuid':uuid})
+        if(!blog){
+            return res.status(404).json({
+                'message':'No blog found!'
+            })
+        }
+
+        const blogComments = blog.comments
+
+        const existingComment = blogComments.find(c => c.commentId === commentId);
+
+        if (!existingComment) {
+            return res.status(404).json({
+                message: `No comment found with commentId: ${commentId}`
+            });
+        }
+
+        blog.comments = blog.comments.filter(c => c.commentId !== commentId);
+        await blog.save();
+
+
+        return res.status(200).json({
+            message: 'Comment removed successfully!'
+        });
+    }
+
+    catch(err){
+        return res.status(500).json({
+            'message':`Err: ${err}`
+        })
+    }
+    
 }
 
 
