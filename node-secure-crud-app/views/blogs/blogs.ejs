@@ -1,0 +1,472 @@
+    <%- include('../partials/header') %>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #667eea !important;
+        }
+        
+        .nav-link {
+            color: #333 !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: #667eea !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 8px 25px;
+            border-radius: 25px;
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 25px;
+            border-radius: 25px;
+        }
+        
+        .page-header {
+            padding: 120px 0 60px 0;
+            color: white;
+            text-align: center;
+        }
+        
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .page-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .blogs-section {
+            padding: 40px 0 80px 0;
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 1rem;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .category-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .category-btn {
+            padding: 8px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            background: white;
+            color: #666;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .category-btn:hover, .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .blog-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .blog-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+        
+        .blog-card-body {
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .blog-card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .blog-card-text {
+            color: #666;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+        
+        .blog-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 15px;
+        }
+        
+        .category-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 60px 0;
+            color: white;
+        }
+        
+        .loading-spinner i {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 0;
+            color: white;
+        }
+        
+        .no-results i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .no-results h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .pagination-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        
+        .pagination {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .page-link {
+            color: #667eea;
+            border: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .page-link:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .page-item.active .page-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1><i class="fas fa-newspaper"></i> Bütün Bloqlar</h1>
+            <p>Maraqlı məqalələri kəşf edin və oxuyun</p>
+        </div>
+    </section>
+
+    <!-- Blogs Section -->
+    <section class="blogs-section">
+        <div class="container">
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Bloq axtar...">
+                    <button class="search-btn" onclick="searchBlogs()">
+                        <i class="fas fa-search"></i> Axtar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-spinner">
+                <i class="fas fa-spinner"></i>
+                <h3>Bloqlar yüklənir...</h3>
+            </div>
+
+            <!-- Blogs Grid -->
+            <div id="blogsContainer" class="row" style="display: none;"></div>
+
+            <!-- No Results -->
+            <div id="noResults" class="no-results" style="display: none;">
+                <i class="fas fa-search"></i>
+                <h3>Heç bir nəticə tapılmadı</h3>
+                <p>Axtarış kriteriyalarını dəyişdirərək yenidən cəhd edin</p>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-section" id="paginationSection" style="display: none;">
+                <ul class="pagination" id="pagination"></ul>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let allBlogs = [];
+        let filteredBlogs = [];
+        let currentPage = 1;
+        const blogsPerPage = 9;
+
+        async function fetchBlogs() {
+            try {
+                const res = await fetch('/blogs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                if (!res.ok) throw new Error('Network response was not ok');
+
+                const data = await res.json();
+                allBlogs = data.blogs;
+                filteredBlogs = data.blogs;
+                displayBlogs();
+
+            } catch (error) {
+                console.error('Bloqlar yüklənərkən xəta:', error);
+                document.getElementById('loadingSpinner').innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>Xəta baş verdi</h3>
+                    <p>Bloqlar yüklənərkən problem yarandı</p>
+                `;
+            }
+        }
+
+        function displayBlogs() {
+            const container = document.getElementById('blogsContainer');
+            const loading = document.getElementById('loadingSpinner');
+            const noResults = document.getElementById('noResults');
+            const paginationSection = document.getElementById('paginationSection');
+
+            loading.style.display = 'none';
+
+            if (filteredBlogs.length === 0) {
+                container.style.display = 'none';
+                noResults.style.display = 'block';
+                paginationSection.style.display = 'none';
+                return;
+            }
+
+            noResults.style.display = 'none';
+            container.style.display = 'flex';
+
+            // Pagination hesablamaları
+            const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
+            const startIndex = (currentPage - 1) * blogsPerPage;
+            const endIndex = startIndex + blogsPerPage;
+            const blogsToShow = filteredBlogs.slice(startIndex, endIndex);
+
+            container.innerHTML = blogsToShow.map(blog => {
+                // Content-i JavaScript ilə qısaldırıq
+                const truncatedContent = blog.content && blog.content.length > 200 
+                    ? blog.content.substring(0, 200) + '...' 
+                    : (blog.content || '');
+                
+                return `
+                    <div class="col-md-4">
+                        <div class="blog-card">
+                            <img src="${blog.imageUrl || '/images/default-blog.jpg'}" alt="${blog.title}">
+                            <div class="blog-card-body">
+                                <h3 class="blog-card-title">${blog.title}</h3>
+                                <div class="blog-meta">
+                                    <span><i class="fas fa-user"></i> ${blog.author?.username || 'Anonim'}</span>
+                                    <span><i class="fas fa-calendar"></i> ${new Date(blog.createdAt).toLocaleDateString('az-AZ')}</span>
+                                </div>
+                                <p class="blog-card-text">${truncatedContent}</p>
+                                <a href="/blog/view/${blog.uuid}" class="btn btn-primary">Daha Çox</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Pagination göstərmək
+            if (totalPages > 1) {
+                paginationSection.style.display = 'flex';
+                renderPagination(totalPages);
+            } else {
+                paginationSection.style.display = 'none';
+            }
+        }
+
+        function renderPagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            let paginationHTML = '';
+
+            // Previous button
+            paginationHTML += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="event.preventDefault(); changePage(${currentPage - 1})">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `
+                    <li class="page-item ${currentPage === i ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="event.preventDefault(); changePage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+
+            // Next button
+            paginationHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="event.preventDefault(); changePage(${currentPage + 1})">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            displayBlogs();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function searchBlogs() {
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            currentPage = 1; // Axtarışda həmişə 1-ci səhifəyə qayıdırıq
+
+            if (searchTerm === '') {
+                // Axtarış boşdursa, bütün bloqları göstər
+                filteredBlogs = allBlogs;
+            } else {
+                // Axtarış edirik: title və content-də axtar
+                filteredBlogs = allBlogs.filter(blog => {
+                    const title = (blog.title || '').toLowerCase();
+                    const content = (blog.content || '').toLowerCase();
+                    
+                    return title.includes(searchTerm) || content.includes(searchTerm);
+                });
+            }
+
+            displayBlogs();
+        }
+
+        // Enter düyməsi ilə axtarış
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchBlogs();
+            }
+        });
+
+        // Səhifə yüklənəndə bloqları çəkmək
+        window.addEventListener('load', fetchBlogs);
+    </script>
+
+    <%- include('../partials/footer') %>

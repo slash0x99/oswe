@@ -2,11 +2,14 @@ const Blog = require('../models/blogModels')
 const jwt = require('jsonwebtoken')
 const getTokenFromHeader = require('../middleware/getTokenFromHeader')
 const { v4: uuidv4 } = require('uuid');
-const test = require('node:test');
 
 
 
-async function getAllBlogs(req,res){
+function getAllBlogsGet(req,res){
+    return res.render('blogs/blogs')
+}
+
+async function getAllBlogsPost(req,res){
     try{
         const allBlogs = await Blog.find()
         return res.status(200).json({
@@ -23,9 +26,17 @@ async function getAllBlogs(req,res){
 
 }
 
-async function getBlogWithUuid(req,res){
-    const uuid = req.params.uuid
+function getBlogWithUuidGet(req,res){
+    return res.render('blogs/blogView')
+}
 
+function createBlogGet(req,res){
+    return res.render('blogs/blogCreate')
+}
+
+async function getBlogWithUuidPost(req,res){
+
+    const uuid = req.params.uuid
     const blog = await Blog.findOne({"uuid":uuid})
     if(blog===null){
         return res.status(404).json({
@@ -39,16 +50,32 @@ async function getBlogWithUuid(req,res){
         })
 }
 
-async function createBlog(req,res){
+async function getRecentBlogs(req,res){
+    try{
+        const recentBlogs = await Blog.find().sort({ createdAt: -1 }).limit(6);
+        return res.status(200).json({
+            'message':'Recent blogs fetched successfully!',
+            'blogs':recentBlogs
+        })
+    }   catch (error){
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });  
+    }
+}
+
+async function createBlogPost(req,res){
     const {
         title,
         content,
         imageUrl
     } = req.body
+
+    const user = req.user
+
     var author = {
-        'id':12122,
-        'username':'blogUser1',
-        'email':'bloguser1@gmail.com'
+        'id':user.id,
+        'username':user.username,
+        'email':user.email
     }
 
 
@@ -60,22 +87,24 @@ async function createBlog(req,res){
         'author':author
     }
 
-    
-    //const jwtToken = getTokenFromHeader(req)
-
 
     const newBlog = new Blog(userData)
     newBlog.save()
 
     return res.status(201).json({
-        'message':'Successfuly Created!'
+        'message':'Successfuly Created!',
+        'redirectUrl': '/blog/view/' + userData.uuid
     })
 
 
 }
 
+function editBlogGet(req,res){
+    return res.render('blogs/blogEdit')
+}   
 
-async function editBlog(req,res){
+
+async function editBlogPost(req,res){
     try {
         const uuid = req.params.uuid;
         const { title, content, imageUrl } = req.body;
@@ -131,7 +160,8 @@ async function postComment(req,res){
 
     try{
         const {text,uuid} = req.body
-        var username = 'test'
+        const user = req.user
+        const username = user.username  
 
         const comment = {
             'text':text,
@@ -166,7 +196,6 @@ async function postComment(req,res){
 
 async function deleteComment(req,res){
     try{
-        console.log('deng')
         const {uuid,commentId} = req.body
         const blog = await Blog.findOne({'uuid':uuid})
         if(!blog){
@@ -204,4 +233,4 @@ async function deleteComment(req,res){
 
 
 
-module.exports={getAllBlogs,getBlogWithUuid,createBlog,editBlog,deleteBlog,postComment,deleteComment}
+module.exports={getAllBlogsGet,getAllBlogsPost,getBlogWithUuidGet,getBlogWithUuidPost,createBlogPost,editBlogPost,editBlogGet,deleteBlog,postComment,deleteComment,getRecentBlogs,createBlogGet}

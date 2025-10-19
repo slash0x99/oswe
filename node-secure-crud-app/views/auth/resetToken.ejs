@@ -1,0 +1,505 @@
+<%- include('../partials/header') %>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .reset-container {
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .reset-wrapper {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.2);
+        }
+        
+        .reset-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+        }
+        
+        .reset-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .reset-header p {
+            margin: 15px 0 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .reset-body {
+            padding: 50px;
+        }
+        
+        .form-group {
+            margin-bottom: 30px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-label i {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        }
+        
+        .password-group {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #667eea;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+        
+        .toggle-password:hover {
+            color: #764ba2;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .login-link p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .login-link a:hover {
+            color: #764ba2;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border: 2px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .alert i {
+            margin-right: 10px;
+        }
+        
+        .password-requirements {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .requirement {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .requirement:last-child {
+            margin-bottom: 0;
+        }
+        
+        .requirement i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .requirement.valid i {
+            color: #28a745;
+        }
+        
+        .requirement.invalid i {
+            color: #dc3545;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .spinner {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="reset-container">
+        <div class="reset-wrapper">
+            <div class="reset-header">
+                <h1>
+                    <i class="fas fa-key"></i> Yeni Şifrə Yarat
+                </h1>
+                <p>Güvənli bir şifrə ilə hesabınızı təkrar aktiv edin</p>
+            </div>
+            
+            <div class="reset-body">
+                <!-- Alert Messages -->
+                <div id="alertMessage" class="alert"></div>
+                
+                <!-- Reset Form -->
+                <form id="resetForm" onsubmit="handleResetToken(event)">
+                    <div class="form-group">
+                        <label for="emailInput" class="form-label">
+                            <i class="fas fa-envelope"></i> E-Poçt Ünvanı
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="emailInput" 
+                            placeholder="sizin@email.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="passwordInput" class="form-label">
+                            <i class="fas fa-lock"></i> Yeni Şifrə
+                        </label>
+                        <div class="password-group">
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="passwordInput" 
+                                placeholder="Yeni şifrənizi daxil edin"
+                                required
+                                oninput="validatePassword()"
+                            >
+                            <button 
+                                type="button" 
+                                class="toggle-password" 
+                                onclick="togglePasswordVisibility('passwordInput')"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Password Requirements -->
+                        <div class="password-requirements">
+                            <div class="requirement" id="req-length">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Ən azı 8 simvol</span>
+                            </div>
+                            <div class="requirement" id="req-uppercase">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Ən azı bir böyük hərf (A-Z)</span>
+                            </div>
+                            <div class="requirement" id="req-lowercase">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Ən azı bir kiçik hərf (a-z)</span>
+                            </div>
+                            <div class="requirement" id="req-number">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Ən azı bir rəqəm (0-9)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPasswordInput" class="form-label">
+                            <i class="fas fa-lock"></i> Şifrəni Təsdiq Et
+                        </label>
+                        <div class="password-group">
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="confirmPasswordInput" 
+                                placeholder="Şifrəni yenidən daxil edin"
+                                required
+                            >
+                            <button 
+                                type="button" 
+                                class="toggle-password" 
+                                onclick="togglePasswordVisibility('confirmPasswordInput')"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <i class="fas fa-check-circle"></i> Şifrəni Dəyişdir
+                    </button>
+                </form>
+                
+                <div class="login-link">
+                    <p>Şifrənizi xatırladınız? <a href="/login">Daxil Ol</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let resetToken = null;
+        
+        // URL-dən token-i götürmək
+        function getTokenFromUrl() {
+            const path = window.location.pathname;
+            const match = path.match(/\/reset-token\/([a-zA-Z0-9]+)/);
+            return match ? match[1] : null;
+        }
+        
+        // Səhifə yüklənəndə
+        document.addEventListener('DOMContentLoaded', function() {
+            resetToken = getTokenFromUrl();
+            
+            if (!resetToken) {
+                showAlert('Dəyişdirmə linki keçersizdir!', 'error');
+                setTimeout(() => {
+                    window.location.href = '/auth/resetPassword';
+                }, 2000);
+            }
+        });
+        
+        // Şifrə göstər/gizlət
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const button = event.target.closest('.toggle-password');
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+        
+        // Şifrə validasiyası
+        function validatePassword() {
+            const password = document.getElementById('passwordInput').value;
+            
+            const requirements = {
+                'req-length': password.length >= 8,
+                'req-uppercase': /[A-Z]/.test(password),
+                'req-lowercase': /[a-z]/.test(password),
+                'req-number': /[0-9]/.test(password)
+            };
+            
+            Object.entries(requirements).forEach(([id, isValid]) => {
+                const element = document.getElementById(id);
+                const icon = element.querySelector('i');
+                
+                if (isValid) {
+                    element.classList.remove('invalid');
+                    element.classList.add('valid');
+                    icon.classList.remove('fa-times-circle');
+                    icon.classList.add('fa-check-circle');
+                } else {
+                    element.classList.remove('valid');
+                    element.classList.add('invalid');
+                    icon.classList.remove('fa-check-circle');
+                    icon.classList.add('fa-times-circle');
+                }
+            });
+            
+            return Object.values(requirements).every(v => v);
+        }
+        
+        async function handleResetToken(event) {
+            event.preventDefault();
+            
+            const password = document.getElementById('passwordInput').value;
+            const email = document.getElementById('emailInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
+            console.log(email,password,confirmPassword);
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Validasyon
+            if (!validatePassword()) {
+                showAlert('Şifrə bütün tələbləri yerinə yetirməlidir!', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showAlert('Şifrələr uyğun deyil!', 'error');
+                return;
+            }
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner spinner"></i> Dəyişdirilir...';
+                
+                const response = await fetch(`/auth/reset-token/${resetToken}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email:email,
+                        'newPassword': password,
+                        token: resetToken
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert(data.message || 'Şifrəniz uğurla dəyişdirildi!', 'success');
+                    
+                    // 2 saniyə sonra login səhifəsinə yönəlt
+                    setTimeout(() => {
+                        window.location.href = '/auth/login';
+                    }, 2000);
+                } else {
+                    showAlert(data.message || 'Şifrə dəyişdirilərkən xəta baş verdi!', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Xəta:', error);
+                showAlert('Serverlə bağlantı qurularkən xəta baş verdi!', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Şifrəni Dəyişdir';
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alertMessage = document.getElementById('alertMessage');
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle'
+            };
+            
+            alertMessage.innerHTML = `
+                <i class="fas ${icons[type]}"></i>
+                <span>${message}</span>
+            `;
+            
+            alertMessage.className = `alert alert-${type}`;
+            alertMessage.style.display = 'block';
+            
+            if (type !== 'success') {
+                setTimeout(() => {
+                    alertMessage.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+
+</body>
+</html>
+<%- include('../partials/footer') %>

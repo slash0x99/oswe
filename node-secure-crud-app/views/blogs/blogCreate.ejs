@@ -1,0 +1,447 @@
+
+<%- include('../partials/header') %>
+
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #667eea !important;
+        }
+        
+        .nav-link {
+            color: #333 !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: #667eea !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 8px 25px;
+            border-radius: 25px;
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 25px;
+            border-radius: 25px;
+        }
+        
+        .edit-container {
+            padding: 100px 0 60px 0;
+        }
+        
+        .edit-wrapper {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+        }
+        
+        .edit-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .edit-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .edit-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .edit-body {
+            padding: 50px;
+        }
+        
+        .form-group {
+            margin-bottom: 30px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-label i {
+            color: #667eea;
+        }
+        
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+            outline: none;
+        }
+        
+        #titleInput {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        #contentInput {
+            min-height: 400px;
+            resize: vertical;
+            line-height: 1.8;
+        }
+        
+        .image-preview-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #e0e0e0;
+        }
+        
+        .image-preview {
+            margin-top: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .image-preview img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        
+        .preview-placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .preview-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+        
+        .preview-placeholder p {
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-end;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 60px 0;
+            color: white;
+        }
+        
+        .loading-spinner i {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 60px 0;
+            color: white;
+        }
+
+        .error-message i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .error-message h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .char-count {
+            text-align: right;
+            color: #999;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: #ff4757;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+        <i class="fas fa-spinner"></i>
+        <h3>Yüklənir...</h3>
+    </div>
+
+    <!-- Edit Container -->
+    <div id="editContainer" class="edit-container">
+        <div class="container">
+            <div class="edit-wrapper">
+                <div class="edit-header">
+                    <h1 id="pageTitle">
+                        <i class="fas fa-pen"></i> <span id="headerText">Yeni Bloq Yarat</span>
+                    </h1>
+                    <p id="headerSubtext">Məqalənizi yaradın və paylaşın</p>
+                </div>
+                
+                <div class="edit-body">
+                    <form id="blogForm">
+                        <!-- Title Input -->
+                        <div class="form-group">
+                            <label for="titleInput" class="form-label required-field">
+                                <i class="fas fa-heading"></i> Başlıq
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="titleInput" 
+                                placeholder="Bloq başlığını daxil edin..."
+                                required
+                                maxlength="200"
+                            >
+                            <div class="char-count">
+                                <span id="titleCount">0</span>/200
+                            </div>
+                        </div>
+
+                        <!-- Image URL Input -->
+                        <div class="form-group">
+                            <label for="imageUrlInput" class="form-label required-field">
+                                <i class="fas fa-image"></i> Şəkil URL
+                            </label>
+                            <input 
+                                type="url" 
+                                class="form-control" 
+                                id="imageUrlInput" 
+                                placeholder="https://example.com/image.jpg"
+                                required
+                            >
+                            
+                            <!-- Image Preview -->
+                            <div class="image-preview-section">
+                                <div class="preview-placeholder" id="previewPlaceholder">
+                                    <i class="fas fa-image"></i>
+                                    <p>Şəkil URL daxil edin və önizləmə görünəcək</p>
+                                </div>
+                                <div class="image-preview" id="imagePreview">
+                                    <img id="previewImage" src="" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Input -->
+                        <div class="form-group">
+                            <label for="contentInput" class="form-label required-field">
+                                <i class="fas fa-align-left"></i> Məzmun
+                            </label>
+                            <textarea 
+                                class="form-control" 
+                                id="contentInput" 
+                                placeholder="Bloq məzmununu yazın..."
+                                required
+                            ></textarea>
+                            <div class="char-count">
+                                <span id="contentCount">0</span> simvol
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button type="button" class="btn-cancel" onclick="cancelEdit()">
+                                <i class="fas fa-times"></i> Ləğv Et
+                            </button>
+                            <button type="submit" class="btn-save">
+                                <i class="fas fa-save"></i> <span id="saveButtonText">Yadda Saxla</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Image URL dəyişəndə önizləmə göstərmək
+        document.getElementById('imageUrlInput').addEventListener('input', function() {
+            const url = this.value.trim();
+            if (url) {
+                showImagePreview(url);
+            } else {
+                hideImagePreview();
+            }
+        });
+
+        function showImagePreview(url) {
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('previewPlaceholder');
+            const image = document.getElementById('previewImage');
+            
+            image.src = url;
+            image.onload = function() {
+                placeholder.style.display = 'none';
+                preview.style.display = 'block';
+            };
+            image.onerror = function() {
+                hideImagePreview();
+            };
+        }
+
+        function hideImagePreview() {
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('previewPlaceholder').style.display = 'block';
+        }
+
+        // Simvol sayını yeniləmək
+        document.getElementById('titleInput').addEventListener('input', updateCharCount);
+        document.getElementById('contentInput').addEventListener('input', updateCharCount);
+
+        function updateCharCount() {
+            const titleLength = document.getElementById('titleInput').value.length;
+            const contentLength = document.getElementById('contentInput').value.length;
+            
+            document.getElementById('titleCount').textContent = titleLength;
+            document.getElementById('contentCount').textContent = contentLength;
+        }
+
+        document.getElementById('blogForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('titleInput').value.trim();
+            const imageUrl = document.getElementById('imageUrlInput').value.trim();
+            const content = document.getElementById('contentInput').value.trim();
+
+            if (!title || !imageUrl || !content) {
+                alert('Bütün sahələri doldurun!');
+                return;
+            }
+
+            try {
+                const blogData = {
+                    title: title,
+                    imageUrl: imageUrl,
+                    content: content
+                };
+
+                const response = await fetch('/blog/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(blogData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Bloq yaradıla bilmədi');
+                }
+
+                const data = await response.json();
+                
+                alert('Bloq uğurla yaradıldı!');
+                
+                
+                window.location.href = data.redirectUrl || '/blogs';
+                
+            } catch (error) {
+                console.error('Bloq yaradılarkən xəta:', error);
+                alert('Bloq yaradılarkən xəta baş verdi!');
+            }
+        });
+
+        function cancelEdit() {
+            if (confirm('Dəyişikliklər yadda saxlanılmayacaq. Davam etmək istəyirsiniz?')) {
+                // Geri qayıtmaq
+                window.history.back();
+                // və ya
+                // window.location.href = '/blogs';
+            }
+        }
+    </script>
+<%- include('../partials/footer') %>

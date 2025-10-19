@@ -1,0 +1,710 @@
+<%- include('../partials/header') %>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #667eea !important;
+        }
+        
+        .nav-link {
+            color: #333 !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: #667eea !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 8px 25px;
+            border-radius: 25px;
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 25px;
+            border-radius: 25px;
+        }
+        
+        .blog-container {
+            padding: 100px 0 60px 0;
+        }
+        
+        .blog-content-wrapper {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+        }
+        
+        .blog-header {
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+        }
+        
+        .blog-header img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .blog-header-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 40px;
+            color: white;
+        }
+        
+        .blog-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .blog-meta {
+            display: flex;
+            gap: 30px;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .blog-meta span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .blog-body {
+            padding: 50px;
+        }
+        
+        .blog-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-delete {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #ff3838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4);
+        }
+        
+        .blog-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 40px;
+        }
+        
+        .blog-content p {
+            margin-bottom: 20px;
+        }
+        
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .author-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .author-details h4 {
+            margin: 0;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .author-details p {
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+        
+        .comments-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.2);
+        }
+        
+        .comments-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .comments-header h3 {
+            margin: 0;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .comments-count {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .comment-form {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .comment-form h4 {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .comment-input {
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s;
+        }
+        
+        .comment-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .comment-submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 15px;
+        }
+        
+        .comment-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .comment-item {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .comment-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .comment-user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .comment-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .comment-info h5 {
+            margin: 0;
+            color: #333;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
+        .comment-date {
+            color: #999;
+            font-size: 0.85rem;
+        }
+        
+        .comment-delete-btn {
+            background: #ff4757;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .comment-delete-btn:hover {
+            background: #ff3838;
+            transform: translateY(-2px);
+        }
+        
+        .comment-text {
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .no-comments {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .no-comments i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+        
+        .no-comments p {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 60px 0;
+            color: white;
+        }
+        
+        .loading-spinner i {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 60px 0;
+            color: white;
+        }
+
+        .error-message i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .error-message h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner">
+        <i class="fas fa-spinner"></i>
+        <h3>Bloq yüklənir...</h3>
+    </div>
+
+    <!-- Blog Container -->
+    <div id="blogContainer" class="blog-container" style="display: none;">
+        <div class="container">
+            <!-- Blog Content -->
+            <div class="blog-content-wrapper">
+                <div class="blog-header">
+                    <img id="blogImage" src="" alt="Blog Image">
+                    <div class="blog-header-overlay">
+                        <h1 class="blog-title" id="blogTitle"></h1>
+                        <div class="blog-meta">
+                            <span><i class="fas fa-user"></i> <span id="blogAuthor"></span></span>
+                            <span><i class="fas fa-calendar"></i> <span id="blogDate"></span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="blog-body">
+                    <!-- Action Buttons -->
+                    <div class="blog-actions">
+                        <button class="btn-action btn-edit" onclick="editBlog()">
+                            <i class="fas fa-edit"></i> Redaktə Et
+                        </button>
+                        <button class="btn-action btn-delete" onclick="deleteBlog()">
+                            <i class="fas fa-trash"></i> Sil
+                        </button>
+                    </div>
+
+                    <div class="blog-content" id="blogContent"></div>
+                    
+                    <div class="author-info">
+                        <div class="author-avatar" id="authorAvatar"></div>
+                        <div class="author-details">
+                            <h4 id="authorName"></h4>
+                            <p>Bloq Müəllifi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="comments-section">
+                <div class="comments-header">
+                    <h3><i class="fas fa-comments"></i> Şərhlər</h3>
+                    <span class="comments-count" id="commentsCount">0</span>
+                </div>
+
+                <!-- Comment Form -->
+                <div class="comment-form">
+                    <h4><i class="fas fa-pen"></i> Şərh Əlavə Et</h4>
+                    <textarea 
+                        class="comment-input" 
+                        id="commentInput" 
+                        placeholder="Şərhinizi yazın..."
+                    ></textarea>
+                    <button class="comment-submit-btn" onclick="submitComment()">
+                        <i class="fas fa-paper-plane"></i> Göndər
+                    </button>
+                </div>
+
+                <!-- Comments List -->
+                <div class="comments-list" id="commentsList"></div>
+
+                <!-- No Comments Message -->
+                <div class="no-comments" id="noComments" style="display: none;">
+                    <i class="fas fa-comment-slash"></i>
+                    <p>Hələ şərh yoxdur. İlk şərhi siz yazın!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let blogData = null;
+        let comments = [];
+        let blogUuid = null;
+
+        // URL-dən UUID-ni götürmək
+        function getBlogUuidFromUrl() {
+            const path = window.location.pathname;
+            const match = path.match(/\/blog\/view\/([a-f0-9-]+)/i);
+            return match ? match[1] : null;
+        }
+
+        // API-dən bloq məlumatlarını çəkmək
+        async function fetchBlogData() {
+            try {
+                blogUuid = getBlogUuidFromUrl();
+                
+                if (!blogUuid) {
+                    throw new Error('Blog UUID tapılmadı');
+                }
+
+                // POST request ilə bloq məlumatlarını çəkmək
+                const response = await fetch(`/blog/view/${blogUuid}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Bloq tapılmadı');
+                }
+
+                const data = await response.json();
+                
+                if (data.message === 'Data successfuly fetched!' && data.blog) {
+                    blogData = data.blog;
+                    comments = data.blog.comments || [];
+                    displayBlog(data.blog);
+                    displayComments(comments);
+                } else {
+                    throw new Error('Bloq məlumatları düzgün gəlmədi');
+                }
+            } catch (error) {
+                console.error('Bloq yüklənərkən xəta:', error);
+                document.getElementById('loadingSpinner').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>Xəta baş verdi</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayBlog(blog) {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('blogContainer').style.display = 'block';
+
+            // Bloq məlumatlarını göstərmək
+            document.getElementById('blogTitle').textContent = blog.title || 'Başlıq yoxdur';
+            document.getElementById('blogAuthor').textContent = blog.author.username || 'Naməlum müəllif';
+            document.getElementById('blogDate').textContent = formatDate(blog.createdAt);
+            document.getElementById('blogImage').src = blog.imageUrl || 'https://via.placeholder.com/1200x600?text=No+Image';
+            document.getElementById('blogContent').innerHTML = blog.content || '<p>Məzmun yoxdur</p>';
+            
+            // Müəllif məlumatları
+            const authorName = blog.author.username || 'Naməlum';
+            const authorInitial = authorName.charAt(0).toUpperCase();
+            document.getElementById('authorAvatar').textContent = authorInitial;
+            document.getElementById('authorName').textContent = authorName;
+        }
+
+        function displayComments(commentsList) {
+            const container = document.getElementById('commentsList');
+            const noComments = document.getElementById('noComments');
+            const commentsCount = document.getElementById('commentsCount');
+
+            commentsCount.textContent = commentsList.length;
+
+            if (commentsList.length === 0) {
+                container.style.display = 'none';
+                noComments.style.display = 'block';
+                return;
+            }
+
+            noComments.style.display = 'none';
+            container.style.display = 'flex';
+
+            container.innerHTML = commentsList.map(comment => {
+                const initial = (comment.username || 'U').charAt(0).toUpperCase();
+                return `
+                    <div class="comment-item" data-comment-id="${comment.id}">
+                        <div class="comment-header">
+                            <div class="comment-user-info">
+                                <div class="comment-avatar">${initial}</div>
+                                <div class="comment-info">
+                                    <h5>${comment.username || 'İstifadəçi'}</h5>
+                                    <span class="comment-date">${formatDate(comment.createdAt)}</span>
+                                </div>
+                            </div>
+                            <button class="comment-delete-btn" onclick="deleteComment('${comment.commentId}')">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </div>
+                        <p class="comment-text">${comment.text}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Tarix bilinmir';
+            
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('az-AZ', options);
+        }
+
+        // Redaktə səhifəsinə yönəltmə
+        function editBlog() {
+            if (!blogUuid) {
+                alert('Blog UUID tapılmadı!');
+                return;
+            }
+            window.location.href = `/blog/edit/${blogUuid}`;
+        }
+
+        // Bloqu silmə
+        async function deleteBlog() {
+            if (!confirm('Bu bloqu silmək istədiyinizdən əminsiniz? Bu əməl geri alına bilməz!')) {
+                return;
+            }
+
+            if (!blogUuid) {
+                alert('Blog UUID tapılmadı!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/blog/delete/${blogUuid}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Bloq silinərkən xəta baş verdi');
+                }
+
+                alert('Bloq uğurla silindi!');
+                window.location.href = '/blogs';
+                
+            } catch (error) {
+                console.error('Bloq silinərkən xəta:', error);
+                alert('Bloq silinərkən xəta baş verdi!');
+            }
+        }
+
+        async function submitComment() {
+            const commentInput = document.getElementById('commentInput');
+            const content = commentInput.value.trim();
+
+            if (content === '') {
+                alert('Şərh boş ola bilməz!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/blog/comment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                    },
+                    body: JSON.stringify({ text: content, uuid: blogUuid })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Şərh göndərilərkən xəta baş verdi');
+                }
+
+                const data = await response.json();
+                
+                // Bloq məlumatlarını yenidən yüklə
+                await fetchBlogData();
+                commentInput.value = '';
+                
+                alert('Şərhiniz uğurla əlavə edildi!');
+            } catch (error) {
+                console.error('Şərh göndərilərkən xəta:', error);
+                alert('Şərh göndərilərkən xəta baş verdi!');
+            }
+        }
+
+        async function deleteComment(commentId) {
+            if (!confirm('Bu şərhi silmək istədiyinizdən əminsiniz?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/blog/comment`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ uuid: blogUuid, commentId })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Şərh silinərkən xəta baş verdi');
+                }
+
+                // Bloq məlumatlarını yenidən yüklə
+                await fetchBlogData();
+                
+                alert('Şərh uğurla silindi!');
+            } catch (error) {
+                console.error('Şərh silinərkən xəta:', error);
+                alert('Şərh silinərkən xəta baş verdi!');
+            }
+        }
+
+        window.addEventListener('load', fetchBlogData);
+    </script>
+
+</body>
+</html>
+<%- include('../partials/footer') %>

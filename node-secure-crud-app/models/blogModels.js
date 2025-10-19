@@ -35,7 +35,7 @@ const blogSchema = new Schema({
         trim:true
    },
    author:{
-    id: { type: Number},
+    id: { type: String},
     username:{ type: String},
     email: { type: String}
    },

@@ -1,7 +1,7 @@
 
 
 function home(req,res){
-    return res.send('ok')
+    return res.render('index')
 }
 
 module.exports={home}
