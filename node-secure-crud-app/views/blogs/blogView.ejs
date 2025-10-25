@@ -425,12 +425,15 @@
                 <div class="blog-body">
                     <!-- Action Buttons -->
                     <div class="blog-actions">
-                        <button class="btn-action btn-edit" onclick="editBlog()">
-                            <i class="fas fa-edit"></i> Redaktə Et
-                        </button>
-                        <button class="btn-action btn-delete" onclick="deleteBlog()">
-                            <i class="fas fa-trash"></i> Sil
-                        </button>
+                        
+                        <% if(user && user.isAdmin){ %>
+                            <button class="btn-action btn-edit" onclick="editBlog()">
+                                <i class="fas fa-edit"></i> Redaktə Et
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deleteBlog()">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        <% } %>
                     </div>
 
                     <div class="blog-content" id="blogContent"></div>
@@ -481,7 +484,9 @@
         let blogData = null;
         let comments = [];
         let blogUuid = null;
-
+        const isAdmin = <%= !!(user && user.isAdmin) %>;
+        
+        console.log(isAdmin)
         // URL-dən UUID-ni götürmək
         function getBlogUuidFromUrl() {
             const path = window.location.pathname;
@@ -517,7 +522,7 @@
                     blogData = data.blog;
                     comments = data.blog.comments || [];
                     displayBlog(data.blog);
-                    displayComments(comments);
+                    displayComments(comments,isAdmin);
                 } else {
                     throw new Error('Bloq məlumatları düzgün gəlmədi');
                 }
@@ -542,7 +547,7 @@
             document.getElementById('blogAuthor').textContent = blog.author.username || 'Naməlum müəllif';
             document.getElementById('blogDate').textContent = formatDate(blog.createdAt);
             document.getElementById('blogImage').src = blog.imageUrl || 'https://via.placeholder.com/1200x600?text=No+Image';
-            document.getElementById('blogContent').innerHTML = blog.content || '<p>Məzmun yoxdur</p>';
+            document.getElementById('blogContent').innerText = blog.content || '<p>Məzmun yoxdur</p>';
             
             // Müəllif məlumatları
             const authorName = blog.author.username || 'Naməlum';
@@ -551,7 +556,7 @@
             document.getElementById('authorName').textContent = authorName;
         }
 
-        function displayComments(commentsList) {
+        function displayComments(commentsList, isAdmin) {
             const container = document.getElementById('commentsList');
             const noComments = document.getElementById('noComments');
             const commentsCount = document.getElementById('commentsCount');
@@ -569,21 +574,42 @@
 
             container.innerHTML = commentsList.map(comment => {
                 const initial = (comment.username || 'U').charAt(0).toUpperCase();
+                // təhlükəsizlik: comment.text kimi istifadə edilən server datalarını HTML-escape etmək məsləhətdir
+                // burada sadə escape funksiyası nümunəsi var:
+                function esc(s) {
+                    if (s == null) return '';
+                    return String(s)
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                }
+
+                const usernameSafe = esc(comment.username || 'İstifadəçi');
+                const textSafe = esc(comment.text);
+                const dateSafe = esc(formatDate(comment.createdAt));
+
+                // show delete button only if isAdmin true
+                const deleteBtn = isAdmin
+                    ? `<button class="comment-delete-btn" onclick="deleteComment('${esc(comment.commentId)}')">
+                            <i class="fas fa-trash"></i> Sil
+                        </button>`
+                    : '';
+
                 return `
-                    <div class="comment-item" data-comment-id="${comment.id}">
+                    <div class="comment-item" data-comment-id="${esc(comment.id)}">
                         <div class="comment-header">
                             <div class="comment-user-info">
                                 <div class="comment-avatar">${initial}</div>
                                 <div class="comment-info">
-                                    <h5>${comment.username || 'İstifadəçi'}</h5>
-                                    <span class="comment-date">${formatDate(comment.createdAt)}</span>
+                                    <h5>${usernameSafe}</h5>
+                                    <span class="comment-date">${dateSafe}</span>
                                 </div>
                             </div>
-                            <button class="comment-delete-btn" onclick="deleteComment('${comment.commentId}')">
-                                <i class="fas fa-trash"></i> Sil
-                            </button>
+                            ${deleteBtn}
                         </div>
-                        <p class="comment-text">${comment.text}</p>
+                        <p class="comment-text">${textSafe}</p>
                     </div>
                 `;
             }).join('');

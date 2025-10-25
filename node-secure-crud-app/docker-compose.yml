@@ -1,0 +1,71 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    restart: always
+    container_name: secure-crud-app
+    ports:
+      - "3000:3000"
+    environment:
+      MONGO_URI: mongodb://blogUser:Test123@mongo_db:27017/blogDB
+      MYSQL_HOST: mysql_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: Test123
+      MYSQL_DATABASE: userDB 
+    depends_on:
+      mongo_db:
+        condition: service_healthy
+      mysql_db:
+        condition: service_healthy
+    networks:
+      - backend_network
+      
+  mongo_db:
+    image: mongo:latest
+    container_name: mongo_db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: blogDB
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/blogDB --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend_network
+      
+  mysql_db:
+    image: mysql:latest
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Test123
+      MYSQL_DATABASE: userDB
+      MYSQL_USER: user
+      MYSQL_PASSWORD: Test123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pTest123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend_network
+      
+networks:
+  backend_network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  mysql_data:

@@ -3,7 +3,13 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const ResetToken = require('../models/resetModels');
 const User = require('../models/userModels');
+const { Op } = require('sequelize');
 const postTokenToMail = require('../middleware/postTokenToMail'); 
+const checkLoginLimit = require('../middleware/checkRateLimit');
+
+
+
+//GET REQUESTS=============================
 
 const verifySessionGet = (req,res)=>{
     return res.status(200).json({
@@ -19,18 +25,94 @@ const verifyAdminSessionGet = (req,res)=>{
     })
 }
 
-
 function loginGet(req,res){
-    
+    if(req.user){
+        return  res.redirect('/')
+    }
     return res.render('auth/login')
 }
 
+function registerGet(req,res){
+    if(req.user){
+        return  res.redirect('/')
+    }
+    return res.render('auth/register')
+}
 
+function resetPasswordGet(req,res){
+    if(req.user){
+        return  res.redirect('/')
+    }
+    return res.render('auth/resetPassword')
+}
+
+async function resetTokenGet(req,res){
+    if(req.user){
+        return  res.redirect('/')
+    }
+    const {token} = req.params;
+    
+    if(!token){
+        return res.status(400).json({message:'Token is required'});
+    }
+
+    const resetToken = await ResetToken.findOne({where:{token}})
+    if(!resetToken){
+        return res.status(400).json({
+            message:'Invalid or expired token!'
+        })
+    }
+    return res.render('auth/resetToken',{token:token})
+}   
+
+async function logoutGet(req,res){
+
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+        return res.status(400).json({ message: 'User already logout!' });
+    }
+
+    await User.update({ refreshToken: null }, { where: { refreshToken } });
+
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Strict'
+    });
+
+    res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Strict'
+    });
+
+
+    
+    return res.redirect('/auth/login');
+}
+
+
+
+//POST REQUESTS============================
 async function loginPost(req,res){
-    const {username,password} = req.body;
 
+
+    const {username,password} = req.body;
+    const checkRateLimit = await checkLoginLimit(username)
+
+    if(checkRateLimit===5){
+        return res.status(409).json({
+            message:'Rate limit my brother'
+        })
+    }
+    
     if(!username || !password){
         return res.status(400).json({message:'Username and password are required'});
+    }
+
+    if(typeof username!=="string"){
+        return res.status(400).json({ message: 'Invalid input type' });
     }
 
     const user = await User.findOne({where:{username}})
@@ -41,8 +123,7 @@ async function loginPost(req,res){
     }
 
     try{
-
-        const isMatch  = bcrypt.compare(password,user.password)
+        const isMatch  = await bcrypt.compare(password,user.password)
 
         if(!isMatch){
             return res.status(401).json({
@@ -99,12 +180,6 @@ async function loginPost(req,res){
 
 }
 
-
-function registerGet(req,res){
-    return res.render('auth/register')
-}
-
-
 async function registerPost(req,res){
     const {username,email,password,confirmPassword} = req.body;
     let isAdmin;
@@ -113,41 +188,62 @@ async function registerPost(req,res){
         return res.status(400).json({message:'Username, email and password are required'});
     }
 
+    if(typeof username!=="string" || typeof email!=="string"){
+        return res.status(400).json({ message: 'Invalid input type' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email)){
+        return res.status(400).json({message:'Invalid email format'});
+    }
+
     if(password !== confirmPassword){
         return res.status(400).json({message:'Passwords do not match!'});
     }
     
-    const checkUser = await User.findOne({where:{username}})
+    try{
+        const checkUser = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { username },
+                    { email }
+                ]
+            }
+        });
 
-    if(process.env.ENVIRONMENT==="dev" && email==="admin@gmail.com"){
-        isAdmin=true
-    }
+        if(process.env.ENVIRONMENT==="dev" && email==="admin@gmail.com"){
+            isAdmin=true
+        }
 
-    if(checkUser){
-        return res.status(400).json({
-            message:'Username already exists!'
+        if(checkUser){
+            return res.status(400).json({
+                message:'User already exists!'
+            })
+        }
+
+        const hashedPassword = bcrypt.hashSync(password,10);
+        const newUser = new User({
+            username:username,
+            email:email,
+            password:hashedPassword,
+            'isAdmin':isAdmin || false,
+            tokenVersion:0
+            })
+
+        newUser.save()
+
+        return res.status(201).json({
+            message:'User registered successfully!'
         })
     }
-
-    const hashedPassword = bcrypt.hashSync(password,10);
-    const newUser = new User({
-        username:username,
-        email:email,
-        password:hashedPassword,
-        'isAdmin':isAdmin || false,
-        tokenVersion:0
-        })
-
-    newUser.save()
-
-    return res.status(201).json({
-        message:'User registered successfully!'
-    })
-}
-
-
-function resetPasswordGet(req,res){
-    return res.render('auth/resetPassword')
+    catch(err){
+        return res.status(500).json({
+            message: 'Error Ocurred during registration!',
+            error: err.message
+            
+        });
+    }
+    
 }
 
 async function resetPasswordPost(req,res){
@@ -157,63 +253,68 @@ async function resetPasswordPost(req,res){
         return res.status(400).json({message:'Email is required'});
     }
 
-    const user = await User.findOne({where:{email}})
-    if(!user){
+    if(typeof email!=="string"){
+        return res.status(400).json({ message: 'Invalid input type' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+
+    try{
+        if(!emailRegex.test(email)){
+            return res.status(400).json({message:'Invalid email format'});
+        }
+
+        const user = await User.findOne({where:{email}})
+        if(!user){
+            return res.status(200).json({
+                message:'Password reset token generated successfully.Check your email for further instructions.'
+            })
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const expireAt = new Date(Date.now() + 3600000);
+        const existingToken = await ResetToken.findOne({where:{userId:user.id}})
+
+        if(existingToken){
+            await existingToken.update({
+                token:resetToken,
+                expireAt:expireAt
+            })
+        }
+        else{
+            await ResetToken.create({
+                token:resetToken,
+                expireAt:expireAt,
+                userId: user.id
+            });
+        }
+
+
+        var checkMailStatus = await postTokenToMail(email,resetToken);
+
+        if(checkMailStatus.status === 'error'){
+            return res.status(500).json({
+                message:'Error sending email. Please try again later.'
+            })
+        }
+
         return res.status(200).json({
             message:'Password reset token generated successfully.Check your email for further instructions.'
         })
     }
-
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const expireAt = new Date(Date.now() + 3600000);
-
-    const existingToken = await ResetToken.findOne({where:{userId:user.id}})
-
-    if(existingToken){
-        await existingToken.update({
-            token:resetToken,
-            expireAt:expireAt
-        })
-    }
-    else{
-        await ResetToken.create({
-            token:resetToken,
-            expireAt:expireAt,
-            userId: user.id
-        });
-    }
-
-
-    var checkMailStatus = await postTokenToMail(email,resetToken);
-
-    if(checkMailStatus.status === 'error'){
+    catch(err){
         return res.status(500).json({
-            message:'Error sending email. Please try again later.'
-        })
-    }
+            message: 'Server error during password reset!',
+            error: err.message
+    })}
+   
+    
 
-    return res.status(200).json({
-        message:'Password reset token generated successfully.Check your email for further instructions.',
-    })
+    
 
 
 }
-
-async function resetTokenGet(req,res){
-    const {token} = req.params;
-    
-    if(!token){
-        return res.status(400).json({message:'Token is required'});
-    }
-
-    const resetToken = await ResetToken.findOne({where:{token}})
-    if(!resetToken){
-        return res.status(400).json({
-            message:'Invalid or expired token!'
-        })
-    }
-    return res.render('auth/resetToken',{token:token})
-}   
 
 async function resetTokenPost(req,res){
 
@@ -224,71 +325,69 @@ async function resetTokenPost(req,res){
         return res.status(400).json({message:'Token, email and new password are required'});
     }
 
-    const user = await User.findOne({where:{email}})
-    if(!user){
-        return res.status(404).json({
-            message:'User with this email not found!'
-        })
+    if(typeof token!=="string" && typeof email!=="string"){
+        return res.status(400).json({ message: 'Invalid input type' });
+    }
+
+
+    if(newPassword.length < 6){
+        return res.status(400).json({message:'Password must be at least 6 characters long'});
     }
     
-    const checkToken = await ResetToken.findOne({where:{token}})
-    if(!checkToken){
-        return res.status(400).json({
-            message:'Invalid or expired token!'
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    try{
+        if(!emailRegex.test(email)){
+            return res.status(400).json({message:'Invalid email format'});
+        }
+
+        const user = await User.findOne({where:{email}})
+        if(!user){
+            return res.status(404).json({
+                message:'User with this email not found!'
+            })
+        }
+        
+        const checkToken = await ResetToken.findOne({where:{token}})
+        if(!checkToken){
+            return res.status(400).json({
+                message:'Invalid or expired token!'
+            })
+        }
+
+        if(checkToken.expireAt < new Date()){
+            return res.status(400).json({
+                message:'Token has expired!'
+            })
+        }
+
+        if(checkToken.userId !== user.id){
+            return res.status(400).json({
+                message:'Token does not match the user!'
+            })
+        }
+        
+        const hashedPassword = bcrypt.hashSync(newPassword,10);
+        user.password = hashedPassword;
+        await user.save();
+
+        await ResetToken.destroy({where:{token}})
+
+        return res.status(200).json({
+            message:'Password reset successfully!'
         })
     }
-
-    if(checkToken.expireAt < new Date()){
-        return res.status(400).json({
-            message:'Token has expired!'
-        })
-    }
-
-    if(checkToken.userId !== user.id){
-        return res.status(400).json({
-            message:'Token does not match the user!'
-        })
-    }
-    
-    const hashedPassword = bcrypt.hashSync(newPassword,10);
-    user.password = hashedPassword;
-    await user.save();
-
-    await ResetToken.destroy({where:{token}})
-
-    return res.status(200).json({
-        message:'Password reset successfully!'
+    catch(err){
+        return res.status(500).json({
+            message: 'Server error during password reset!',
+            error: err.message
     })
-
-}
-
-async function logoutGet(req,res){
-
-    const refreshToken = req.cookies.refreshToken;
-
-    if (!refreshToken) {
-        return res.status(400).json({ message: 'User already logout!' });
     }
 
-    await User.update({ refreshToken: null }, { where: { refreshToken } });
-
-    res.clearCookie('refreshToken', {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'Strict'
-    });
-
-    res.clearCookie('accessToken', {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'Strict'
-    });
-
-
     
-    return res.redirect('/auth/login');
-}
 
+}
 
 async function refreshTokenPost(req,res){
 
@@ -360,18 +459,26 @@ async function refreshTokenPost(req,res){
 
 }
 
+const refreshTokenGet = (req,res)=>{
+    return res.render('index')
+}   
+
 
 module.exports={
+    verifyAdminSessionGet,
     verifySessionGet,
     loginGet,
-    loginPost,
-    registerGet,
-    registerPost,
-    resetPasswordGet,
-    resetPasswordPost,
     resetTokenGet,
-    resetTokenPost,
     logoutGet,
+    registerGet,
+    resetPasswordGet,
     refreshTokenPost,
-    verifyAdminSessionGet
+    refreshTokenGet,
+
+    registerPost,
+    loginPost,
+    resetPasswordPost,
+    resetTokenPost,
+    refreshTokenPost,
+
 }

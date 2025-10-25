@@ -2,12 +2,46 @@ const Blog = require('../models/blogModels')
 const jwt = require('jsonwebtoken')
 const getTokenFromHeader = require('../middleware/getTokenFromHeader')
 const { v4: uuidv4 } = require('uuid');
+const { request } = require('express');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 
+//GET REQUESTS=============================
 
 function getAllBlogsGet(req,res){
     return res.render('blogs/blogs')
 }
+
+function getBlogWithUuidGet(req,res){
+    return res.render('blogs/blogView')
+}
+
+function createBlogGet(req,res){
+    return res.render('blogs/blogCreate')
+}
+
+function editBlogGet(req,res){
+    return res.render('blogs/blogEdit')
+} 
+
+async function getRecentBlogs(req,res){
+    try{
+        const recentBlogs = await Blog.find().sort({ createdAt: -1 }).limit(6);
+        return res.status(200).json({
+            'message':'Recent blogs fetched successfully!',
+            'blogs':recentBlogs
+        })
+    }   catch (error){
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });  
+    }
+}
+
+
+//POST REQUESTS============================
 
 async function getAllBlogsPost(req,res){
     try{
@@ -26,41 +60,43 @@ async function getAllBlogsPost(req,res){
 
 }
 
-function getBlogWithUuidGet(req,res){
-    return res.render('blogs/blogView')
-}
-
-function createBlogGet(req,res){
-    return res.render('blogs/blogCreate')
-}
-
 async function getBlogWithUuidPost(req,res){
 
     const uuid = req.params.uuid
-    const blog = await Blog.findOne({"uuid":uuid})
-    if(blog===null){
-        return res.status(404).json({
-            'message':'Blog not found!',
+
+    if(!uuid){
+        console.error('UUID param is missing!');
+        return res.status(400).json({
+            'message':'UUID param is missing!',
             'blog':null
         })
     }
-    return res.status(200).json({
-            'message':'Data successfuly fetched!',
-            'blog':blog
-        })
-}
 
-async function getRecentBlogs(req,res){
+    if(typeof uuid!=="string"){
+        console.error('Invalid input type for UUID!');
+        return res.status(400).json({ message: 'Invalid input type' });
+    }
+
     try{
-        const recentBlogs = await Blog.find().sort({ createdAt: -1 }).limit(6);
+
+        const blog = await Blog.findOne({"uuid":uuid})
+        if(blog===null){
+            console.error('Blog not found!');
+            return res.status(404).json({
+                'message':'Blog not found!',
+                'blog':null
+            })
+        }
         return res.status(200).json({
-            'message':'Recent blogs fetched successfully!',
-            'blogs':recentBlogs
-        })
-    }   catch (error){
+                'message':'Data successfuly fetched!',
+                'blog':blog
+            })
+    }
+    catch (error){
         console.error(error);
         res.status(500).json({ message: 'Server error' });  
     }
+   
 }
 
 async function createBlogPost(req,res){
@@ -70,7 +106,39 @@ async function createBlogPost(req,res){
         imageUrl
     } = req.body
 
+    
+
+    if(!title || !content || !imageUrl){
+        console.error('All fields are required!');
+        return res.status(400).json({
+            'message':'All fields are required!'
+        })
+    }
+
+    if(typeof title!=="string"
+        && typeof content!=="string"
+        && typeof imageUrl!=="string"
+    ){
+        console.error('Invalid input type!');
+        return res.status(400).json({ message: 'Invalid input type' });
+    }
+
+    if(title.length<5){
+        console.error('Title must be at least 5 characters long!');
+        return res.status(400).json({
+            'message':'Title must be at least 5 characters long!'
+        })
+    }
+
+    if(req.user===undefined){
+        console.error('Unauthorized access attempt!');
+        return res.status(401).json({
+            'message':'Unauthorized!'
+        })
+    }
+
     const user = req.user
+
 
     var author = {
         'id':user.id,
@@ -78,44 +146,89 @@ async function createBlogPost(req,res){
         'email':user.email
     }
 
+    const sanitizedTitle = DOMPurify.sanitize(title);
+    let sanitizedContent = DOMPurify.sanitize(content);
+    let sanitizedContentHtmlEncoded = sanitizedContent.replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;').replace('javascript:', '');
+    sanitizedContent = sanitizedContentHtmlEncoded;
+    
+    if(imageUrl.includes('<') 
+        || imageUrl.includes('>') 
+        || imageUrl.includes('"') 
+        || imageUrl.includes("'")
+        || imageUrl.includes('javascript:')
+    ){
+        console.error('Invalid image URL detected!');
+        return res.status(400).json({
+            'message':'Invalid image URL!'
+        })
+    }
+
 
     const userData = {
         'uuid':uuidv4(),
-        'title':title,
-        'content':content,
+        'title':sanitizedTitle,
+        'content':sanitizedContent,
         'imageUrl':imageUrl,
         'author':author
     }
 
+    try{
+        const newBlog = new Blog(userData)
+        newBlog.save()
 
-    const newBlog = new Blog(userData)
-    newBlog.save()
+        return res.status(201).json({
+            'message':'Successfuly Created!',
+            'redirectUrl': '/blog/view/' + userData.uuid
+        })
+    }
+    catch (error){
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });  
+    }
 
-    return res.status(201).json({
-        'message':'Successfuly Created!',
-        'redirectUrl': '/blog/view/' + userData.uuid
-    })
-
-
-}
-
-function editBlogGet(req,res){
-    return res.render('blogs/blogEdit')
-}   
-
+}  
 
 async function editBlogPost(req,res){
     try {
         const uuid = req.params.uuid;
         const { title, content, imageUrl } = req.body;
 
+        if (!title || !content || !imageUrl) {
+            console.error('All fields are required for editing!');
+            return res.status(400).json({ message: 'All fields are required!' });
+        }
+
+        if(    typeof title!=="string"
+            && typeof content!=="string"
+            && typeof imageUrl!=="string"
+            && typeof uuid!=="string"
+        ){
+            return res.status(400).json({ message: 'Invalid input type' });
+        }
+
         const blog = await Blog.findOne({ uuid });
         if (!blog) {
             return res.status(404).json({ message: 'Blog not found!' });
         }
 
-        if (title) blog.title = title;
-        if (content) blog.content = content;
+        let sanitizedContent = DOMPurify.sanitize(content);
+        let sanitizedContentHtmlEncoded = sanitizedContent.replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;').replace('javascript:', '');
+        sanitizedContent = sanitizedContentHtmlEncoded;
+            
+        const sanitizedTitle = DOMPurify.sanitize(title);
+        if(imageUrl.includes('<') 
+            || imageUrl.includes('>') 
+            || imageUrl.includes('"') 
+            || imageUrl.includes("'")
+            || imageUrl.includes('javascript:')
+        ){
+            return res.status(400).json({
+                'message':'Invalid image URL!'
+            })
+        }
+
+        if (title) blog.title = sanitizedTitle;
+        if (content) blog.content = sanitizedContent;
         if (imageUrl) blog.imageUrl = imageUrl;
 
         await blog.save();
@@ -136,14 +249,23 @@ async function editBlogPost(req,res){
 async function deleteBlog(req,res){
     try {
         const uuid = req.params.uuid;
+        if (!uuid) {
+            console.error('UUID param is missing!');
+            return res.status(400).json({ message: 'UUID param is missing!' });
+        }
+
+        if(typeof uuid!=="string"){
+            console.error('Invalid input type for UUID!');
+            return res.status(400).json({ message: 'Invalid input type' });
+        }
 
         const blog = await Blog.findOne({ uuid });
         if (!blog) {
+            console.error('Blog not found for deletion!');
             return res.status(404).json({ message: 'Blog not found!' });
         }
 
         await blog.deleteOne();
-
         res.status(200).json({ message: 'Blog deleted successfully!' });
 
     } catch (error) {
@@ -160,8 +282,31 @@ async function postComment(req,res){
 
     try{
         const {text,uuid} = req.body
+        if(typeof text!=="string"
+            && typeof uuid!=="string"
+        ){
+            console.error('Invalid input type for commenting!');
+            return res.status(400).json({ message: 'Invalid input type' });
+        }
+
+        if(!text || !uuid){
+            console.error('All fields are required for commenting!');
+            return res.status(400).json({
+                'message':'All fields are required for commenting!'
+            })
+        }
+
+        if(req.user===undefined){  
+            console.error('Unauthorized access attempt for commenting!'); 
+            return res.status(401).json({
+                'message':'Unauthorized!'
+            })
+        }
+
         const user = req.user
         const username = user.username  
+
+
 
         const comment = {
             'text':text,
@@ -171,6 +316,7 @@ async function postComment(req,res){
 
         const blog = await Blog.findOne({'uuid':uuid})
         if(!blog){
+            console.error('No blog found for commenting!');
             blog.comments = [];
             return res.status(404).json({
                 'message':'No blog found,for commenting.!'
@@ -186,6 +332,7 @@ async function postComment(req,res){
     }
 
     catch (error) {
+        console.error(error);   
         return res.status(500).json({
             'message':`Err: ${error}`
         })
@@ -197,8 +344,22 @@ async function postComment(req,res){
 async function deleteComment(req,res){
     try{
         const {uuid,commentId} = req.body
+        if(!uuid || !commentId){
+            console.error('UUID and CommentId are required for deleting a comment!');   
+            return res.status(400).json({
+                'message':'UUID and CommentId are required!'
+            })
+        }
+
+        if(typeof uuid!=="string" && typeof commentId!=="string"){
+            console.error('Invalid input type for deleting a comment!');
+            return res.status(400).json({ message: 'Invalid input type' });
+        }
+        
+
         const blog = await Blog.findOne({'uuid':uuid})
         if(!blog){
+            console.error('No blog found for deleting a comment!');
             return res.status(404).json({
                 'message':'No blog found!'
             })
@@ -209,6 +370,7 @@ async function deleteComment(req,res){
         const existingComment = blogComments.find(c => c.commentId === commentId);
 
         if (!existingComment) {
+            console.error(`No comment found with commentId: ${commentId}`); 
             return res.status(404).json({
                 message: `No comment found with commentId: ${commentId}`
             });
@@ -224,6 +386,7 @@ async function deleteComment(req,res){
     }
 
     catch(err){
+        console.error(err); 
         return res.status(500).json({
             'message':`Err: ${err}`
         })
@@ -233,4 +396,17 @@ async function deleteComment(req,res){
 
 
 
-module.exports={getAllBlogsGet,getAllBlogsPost,getBlogWithUuidGet,getBlogWithUuidPost,createBlogPost,editBlogPost,editBlogGet,deleteBlog,postComment,deleteComment,getRecentBlogs,createBlogGet}
+module.exports={
+    getAllBlogsGet,
+    getAllBlogsPost,
+    getBlogWithUuidGet,
+    getBlogWithUuidPost,
+    createBlogPost,
+    editBlogPost,
+    editBlogGet,
+    deleteBlog,
+    postComment,
+    deleteComment,
+    getRecentBlogs,
+    createBlogGet
+}

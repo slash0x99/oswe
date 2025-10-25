@@ -10,7 +10,7 @@ router.get('/blog/getRecentBlogs',blogController.getRecentBlogs)
 router.get('/blog/create',isAuthenticated,blogController.createBlogGet)
 router.post('/blog/create',isAuthenticated,blogController.createBlogPost)
 
-router.get('/blog/edit/:uuid',blogController.editBlogGet)
+router.get('/blog/edit/:uuid',isAuthenticated,blogController.editBlogGet)
 router.put('/blog/edit/:uuid',isAuthenticated,isAdmin,blogController.editBlogPost)
 
 

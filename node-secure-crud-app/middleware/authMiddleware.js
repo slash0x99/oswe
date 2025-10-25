@@ -9,6 +9,7 @@ const isAuthenticated = async (req, res, next) => {
     const token = getTokenFromHeader(req);
 
     if (!token) {
+        console.error('[-] No token provided');
         res.locals.user = null
         return res.redirect('/auth/login');
     }
@@ -18,11 +19,13 @@ const isAuthenticated = async (req, res, next) => {
 
         const user = await User.findOne({ where: { id: decoded.userId } });
         if (!user) {
+            console.error('[-] Token is not valid! User not found');
             return res.status(401).json({ message: 'Token is not valid!',redirectTo: '/auth/login' });
         }
 
         const tokenVersion = decoded.tokenVersion;
         if (user.tokenVersion !== tokenVersion) {
+            console.error('[-] Token has been revoked, token version mismatch');
             return res.status(401).json({
                 message: 'Token has been revoked, please log in again!',
                 redirectTo: '/auth/refresh-token'
@@ -33,6 +36,7 @@ const isAuthenticated = async (req, res, next) => {
         res.locals.user = user;
         next();
     } catch (error) {
+        console.error('[-] Token verification failed:', error.message);
         return res.status(401).json({
             message: 'Token is not valid!',
             redirectTo: '/auth/login' }
@@ -48,6 +52,7 @@ const isAdmin = (req,res,next)=>{
     }
 
     else{
+        console.error('[-] Access denied, admin only!');
         return res.status(403).json({
             message:'Access denied, admin only!'
         })
@@ -76,8 +81,8 @@ const userControlMiddleware = async (req,res,next)=>{
         return next();
         }
 
-        req.user = user;         // API-lər üçün
-        res.locals.user = user;  // EJS templates üçün
+        req.user = user;         
+        res.locals.user = user; 
         next();
     } catch (err) {
         res.locals.user = null;

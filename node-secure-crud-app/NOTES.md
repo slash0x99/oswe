@@ -1,13 +1,45 @@
-# CRUD
-- Parametrleri unicleshdir(Title,...)
+# TASKS
+- CSRF PROTECTION
+- DOCKER PROBLEMLERIN HELLI(SOLVED) VE NGINX CONFIGURATION
+- AUTH-MIDDLEWARE -> REFRESH-TOKEN -> SERVICE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # SECURITY
-- Input sanitization and validation
 - Front and Back arassindaki elaqeni best practice getir.
+- CSRF TOKENLER ELAVE (Elave et soraa)
+- AUTH-MIDDLEWARE -> REFRESH-TOKEN -> SERVICE
 # SERVICES
-- Dockerize
+- Dockerize (SOLVED)
 - Nginx configurations
 
 
 # PENTEST
+- REGISTER
+- LOGIN
+- RESET-TOKEN RESET-PASSWORD
+- CREATE & EDIT & DELETE BLOG
 
 
