@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>429 - Çox Sorğu</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+        
+        .error-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 50px;
+            max-width: 600px;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #7f8c8d 0%, #c0392b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            line-height: 1;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        .error-icon {
+            font-size: 80px;
+            color: #c0392b;
+            margin-bottom: 20px;
+            animation: shake 1s ease-in-out infinite;
+        }
+        
+        @keyframes shake {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(-10deg);
+            }
+            75% {
+                transform: rotate(10deg);
+            }
+        }
+        
+        .error-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin: 20px 0;
+        }
+        
+        .error-description {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .btn-custom {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(127, 140, 141, 0.4);
+            color: white;
+        }
+        
+        .btn-outline-custom {
+            background: transparent;
+            border: 2px solid #c0392b;
+            color: #c0392b;
+            padding: 13px 38px;
+            font-size: 18px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+        }
+        
+        .btn-outline-custom:hover {
+            background: #c0392b;
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .countdown {
+            font-size: 16px;
+            color: #666;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .countdown-number {
+            font-weight: 700;
+            color: #c0392b;
+            font-size: 36px;
+            display: block;
+            margin: 10px 0;
+        }
+        
+        .progress-bar-custom {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #7f8c8d 0%, #c0392b 100%);
+            transition: width 1s linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <i class="fas fa-exclamation-triangle error-icon"></i>
+        <h1 class="error-code">429</h1>
+        <h2 class="error-title">Çox Sorğu</h2>
+        <p class="error-description">
+            Çox qısa müddətdə çoxlu sayda sorğu göndərdiniz. Zəhmət olmasa bir az gözləyin və yenidən cəhd edin.
+        </p>
+        
+        <div class="countdown">
+            <span class="countdown-number" id="countdown">60</span>
+            saniyə ərzində yenidən cəhd edə bilərsiniz
+        </div>
+        
+        <div class="progress-bar-custom">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <a href="/" class="btn-custom">
+                <i class="fas fa-home"></i> Ana Səhifə
+            </a>
+            <button onclick="resetCountdown()" class="btn-outline-custom">
+                <i class="fas fa-redo"></i> Yenidən Cəhd Et
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let countdownInterval;
+        let countdownValue = 60;
+
+        function startCountdown() {
+            countdownValue = 60;
+            const countdownElement = document.getElementById('countdown');
+            const progressBar = document.getElementById('progressBar');
+            
+            progressBar.style.width = '100%';
+            
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            countdownInterval = setInterval(() => {
+                countdownValue--;
+                countdownElement.textContent = countdownValue;
+                
+                const progressPercentage = (countdownValue / 60) * 100;
+                progressBar.style.width = progressPercentage + '%';
+                
+                if (countdownValue <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownElement.textContent = '0';
+                    progressBar.style.width = '0%';
+                }
+            }, 1000);
+        }
+
+        function resetCountdown() {
+            startCountdown();
+        }
+
+        // Start countdown on page load
+        window.addEventListener('load', function() {
+            startCountdown();
+        });
+    </script>
+</body>
+</html>

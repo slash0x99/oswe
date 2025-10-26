@@ -263,6 +263,7 @@
 
     <!-- Edit Container -->
     <div id="editContainer" class="edit-container">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken  %>" />
         <div class="container">
             <div class="edit-wrapper">
                 <div class="edit-header">
@@ -397,6 +398,7 @@
             const title = document.getElementById('titleInput').value.trim();
             const imageUrl = document.getElementById('imageUrlInput').value.trim();
             const content = document.getElementById('contentInput').value.trim();
+            const csrfToken = document.querySelector('input[name="csrfToken"]').value;
 
             if (!title || !imageUrl || !content) {
                 alert('Bütün sahələri doldurun!');
@@ -407,7 +409,8 @@
                 const blogData = {
                     title: title,
                     imageUrl: imageUrl,
-                    content: content
+                    content: content,
+                    csrfToken: csrfToken
                 };
 
                 const response = await fetch('/blog/create', {
@@ -423,8 +426,7 @@
                 }
 
                 const data = await response.json();
-                
-                alert('Bloq uğurla yaradıldı!');
+                alert(data.message || 'Bloq uğurla yaradıldı!');
                 
                 
                 window.location.href = data.redirectUrl || '/blogs';

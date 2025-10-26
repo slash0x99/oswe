@@ -15,8 +15,8 @@ async function postTokenToMail(email,token){
         });
 
         const baseUrl = process.env.ENVIRONMENT === "dev" 
-        ? `http://localhost:3000/auth/reset-token/${token}` 
-        : `https://prodenvir.com/auth/reset-token/${token}`;
+        ? `http://secure.app:80/auth/reset-token/${token}` 
+        : `http://secure.app/auth/resetPassword/`
 
         let info = await transporter.sendMail({
             from: `"Password reset!`,

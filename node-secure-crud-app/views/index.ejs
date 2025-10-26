@@ -165,7 +165,10 @@
                     headers: { 'Content-Type': 'application/json' }
                 });
 
-                if (!res.ok) throw new Error('Network response was not ok');
+                if (!res.ok){
+                    let resData = await res.json();
+                    throw new Error(resData.message || 'Bloqlar yüklənilə bilmədi!');
+                }
 
                 const data = await res.json();
                 displayRecentBlogs(data.blogs);

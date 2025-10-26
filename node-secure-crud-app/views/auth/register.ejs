@@ -307,7 +307,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert('Qeydiyyat uğurla tamamlandı! İndi daxil ola bilərsiniz.');
+                    alert(response.message || 'Qeydiyyat uğurla tamamlandı!');
                     window.location.href = '/auth/login';
                 } else {
                     alert(`Error: ${data.message}`);

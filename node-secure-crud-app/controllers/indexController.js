@@ -4,4 +4,13 @@ function home(req,res){
     return res.render('index')
 }
 
-module.exports={home}
+function page404(req, res) {
+    res.status(404).render('404');
+}
+
+function page429(req, res) {
+    res.status(429).render('429');
+}
+
+module.exports={home,page404,page429};
+

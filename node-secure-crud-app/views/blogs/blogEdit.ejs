@@ -262,6 +262,8 @@
 
     <!-- Edit Container -->
     <div id="editContainer" class="edit-container">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken  %>" />
+
         <div class="container">
             <div class="edit-wrapper">
                 <div class="edit-header">
@@ -349,6 +351,8 @@
 
     <script>
         let blogId = null;
+        const csrfToken = document.querySelector('input[name="csrfToken"]').value;
+
         async function verifySession() {
             try {
                 const response = await fetch('/auth/verifyAdminSessionGet', {
@@ -394,16 +398,17 @@
                 document.getElementById('loadingSpinner').style.display = 'block';
                 
                 const response = await fetch(`/blog/view/${blogId}`, {
-                    headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
-                    },
                     method: 'POST'
                 });
 
                 if (!response.ok) {
-                    throw new Error('Blog tapılmadı');
+                    let resData = await response.json();
+                    if (resData && resData.message) {
+                        alert(resData.message);
+                    } else {
+                        alert('Blog məlumatları yüklənilə bilmədi!');
+                    }
                 }
-
                 blog = await response.json();
                 blog=blog.blog
 
@@ -484,14 +489,14 @@
                 const blogData = {
                     title: title,
                     imageUrl: imageUrl,
-                    content: content
+                    content: content,
+                    csrfToken: csrfToken
                 };
 
                 const response = await fetch(`/blog/edit/${blogId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
                     },
                     body: JSON.stringify(blogData)
                 });

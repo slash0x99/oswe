@@ -32,7 +32,8 @@ app.use((req, res, next) => {
 //VIEW ENGINE   
 app.set('view engine','ejs')
 app.set('views',path.join(__dirname,'views'))
-
+// app.use(express.static(path.join(__dirname, 'public')));
+//ROUTES
 app.use('/',indexRouter)
 app.use('/',blogRouter)
 app.use('/auth',authRouter)

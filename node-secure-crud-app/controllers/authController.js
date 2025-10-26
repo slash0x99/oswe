@@ -389,78 +389,99 @@ async function resetTokenPost(req,res){
 
 }
 
-async function refreshTokenPost(req,res){
-
+async function refreshTokenGet(req, res) {
     try {
-
         const refreshToken = req.cookies.refreshToken;
+        
         if (!refreshToken) {
-            return res.status(401).json({ message: 'Refresh token is required' });
+            return res.status(401).json({ 
+                message: 'Refresh token is required',
+                redirectTo: '/auth/login'
+            });
         }
-
 
         let decoded;
         try {
             decoded = jwt.verify(refreshToken, process.env.SECRET_TOKEN_KEY);
         } catch (err) {
-            return res.status(403).json({ message: 'Invalid or expired refresh token' });
+            res.clearCookie('accessToken');
+            res.clearCookie('refreshToken');
+            return res.status(403).json({ 
+                message: 'Invalid or expired refresh token',
+                redirectTo: '/auth/login'
+            });
         }
-
 
         const user = await User.findOne({ where: { id: decoded.userId } });
-
+        
         if (!user || user.refreshToken !== refreshToken) {
-            if (user) await User.update({ refreshToken: null }, { where: { id: user.id } });
-            return res.status(403).json({ message: 'Invalid refresh token' });
+            if (user) {
+                await User.update({ refreshToken: null }, { where: { id: user.id } });
+            }
+            res.clearCookie('accessToken');
+            res.clearCookie('refreshToken');
+            return res.status(403).json({ 
+                message: 'Invalid refresh token',
+                redirectTo: '/auth/login'
+            });
         }
 
+        // Yeni token version
+        const newTokenVersion = user.tokenVersion + 1;
+
+        // Yeni refresh token
         const newRefreshToken = jwt.sign(
             { userId: user.id },
             process.env.SECRET_TOKEN_KEY,
             { expiresIn: '7d' }
         );
 
-
-        await User.update(
-            { refreshToken: newRefreshToken, tokenVersion: user.tokenVersion + 1 },
-            { where: { id: user.id } }
-        );
-
+        // Yeni access token
         const accessToken = jwt.sign(
             {
                 userId: user.id,
                 username: user.username,
-                tokenVersion: user.tokenVersion + 1
+                tokenVersion: newTokenVersion
             },
             process.env.JWT_SECRET_KEY,
             { expiresIn: '15m', algorithm: 'HS256' }
         );
 
-        res
-        .cookie('refreshToken', newRefreshToken, {
+        // DB update
+        await User.update(
+            { refreshToken: newRefreshToken, tokenVersion: newTokenVersion },
+            { where: { id: user.id } }
+        );
+
+        // Cookie-ləri set et
+        res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             sameSite: 'Strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
-        })
-        .cookie('accessToken', accessToken, {
+        });
+
+        res.cookie('accessToken', accessToken, {
             httpOnly: true,
             sameSite: 'Strict',
             maxAge: 15 * 60 * 1000
-        }) ;
+        });
 
         return res.status(200).json({
-            message: 'New access token generated successfully!',
+            message: 'Tokens refreshed successfully',
             token: accessToken
         });
+
     } catch (err) {
-        return res.status(500).json({ message: 'Server error', error: err.message });
+        console.error('[-] Refresh token error:', err.message);
+        return res.status(500).json({ 
+            message: 'Server error', 
+            error: err.message 
+        });
     }
-
-
 }
 
-const refreshTokenGet = (req,res)=>{
-    return res.render('index')
+const refreshTokenPost = (req,res)=>{
+    res.send('Refresh Token POST Endpoint');
 }   
 
 

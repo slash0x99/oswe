@@ -8,6 +8,9 @@ yarn-error.log*
 
 # Logs
 logs
+logs/
+fail2ban/
+fail2ban.sqlite3
 *.log
 
 # Build və cache

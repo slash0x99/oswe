@@ -408,6 +408,8 @@
 
     <!-- Blog Container -->
     <div id="blogContainer" class="blog-container" style="display: none;">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken  %>" />
+
         <div class="container">
             <!-- Blog Content -->
             <div class="blog-content-wrapper">
@@ -484,6 +486,7 @@
         let blogData = null;
         let comments = [];
         let blogUuid = null;
+        const csrfToken = document.querySelector('input[name="csrfToken"]').value;
         const isAdmin = <%= !!(user && user.isAdmin) %>;
         
         console.log(isAdmin)
@@ -646,13 +649,18 @@
             try {
                 const response = await fetch(`/blog/delete/${blogUuid}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
-                    }
+                    body: JSON.stringify({
+                        'csrfToken':csrfToken
+                    })
                 });
 
                 if (!response.ok) {
-                    throw new Error('Bloq silinərkən xəta baş verdi');
+                    let resData = await response.json();
+                    if (resData && resData.message) {
+                        alert(resData.message);
+                    } else {
+                        throw new Error('Bloq silinərkən xəta baş verdi');
+                    }
                 }
 
                 alert('Bloq uğurla silindi!');
@@ -678,22 +686,26 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
                     },
-                    body: JSON.stringify({ text: content, uuid: blogUuid })
+                    body: JSON.stringify({ text: content, uuid: blogUuid, 'csrfToken':csrfToken}),
+                    cookies: 'include'
                 });
 
                 if (!response.ok) {
-                    throw new Error('Şərh göndərilərkən xəta baş verdi');
-                }
+                    let resData = await response.json();
+                    if (resData && resData.message) {
+                        alert(resData.message);
+                    } else {
+                        throw new Error('Şərh əlavə edilərkən xəta baş verdi'); 
+                    }
+                }   
 
                 const data = await response.json();
                 
                 // Bloq məlumatlarını yenidən yüklə
                 await fetchBlogData();
                 commentInput.value = '';
-                
-                alert('Şərhiniz uğurla əlavə edildi!');
+                alert(data.message || 'Şərh uğurla əlavə edildi!');
             } catch (error) {
                 console.error('Şərh göndərilərkən xəta:', error);
                 alert('Şərh göndərilərkən xəta baş verdi!');
@@ -711,17 +723,24 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ uuid: blogUuid, commentId })
+
+                    body: JSON.stringify({ uuid: blogUuid, commentId, 'csrfToken':csrfToken}),
+                    cookies: 'include'
                 });
 
+                let resData = await response.json();
+                
                 if (!response.ok) {
-                    throw new Error('Şərh silinərkən xəta baş verdi');
+                    if (resData && resData.message) {
+                        alert(resData.message);
+                    } else {
+                        throw new Error('Şərh silinərkən xəta baş verdi');
+                    }
                 }
 
                 // Bloq məlumatlarını yenidən yüklə
                 await fetchBlogData();
-                
-                alert('Şərh uğurla silindi!');
+                alert(resData.message || 'Şərh uğurla silindi!');
             } catch (error) {
                 console.error('Şərh silinərkən xəta:', error);
                 alert('Şərh silinərkən xəta baş verdi!');

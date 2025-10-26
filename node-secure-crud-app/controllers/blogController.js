@@ -16,15 +16,15 @@ function getAllBlogsGet(req,res){
 }
 
 function getBlogWithUuidGet(req,res){
-    return res.render('blogs/blogView')
+    return res.render('blogs/blogView',{csrfToken:req.csrfToken})
 }
 
 function createBlogGet(req,res){
-    return res.render('blogs/blogCreate')
+    return res.render('blogs/blogCreate',{csrfToken:req.csrfToken})
 }
 
 function editBlogGet(req,res){
-    return res.render('blogs/blogEdit')
+    return res.render('blogs/blogEdit',{csrfToken:req.csrfToken})
 } 
 
 async function getRecentBlogs(req,res){
@@ -111,7 +111,7 @@ async function createBlogPost(req,res){
     if(!title || !content || !imageUrl){
         console.error('All fields are required!');
         return res.status(400).json({
-            'message':'All fields are required!'
+            message:'All fields are required!'
         })
     }
 
@@ -126,14 +126,14 @@ async function createBlogPost(req,res){
     if(title.length<5){
         console.error('Title must be at least 5 characters long!');
         return res.status(400).json({
-            'message':'Title must be at least 5 characters long!'
+            message:'Title must be at least 5 characters long!'
         })
     }
 
     if(req.user===undefined){
         console.error('Unauthorized access attempt!');
         return res.status(401).json({
-            'message':'Unauthorized!'
+            message:'Unauthorized!'
         })
     }
 
@@ -159,7 +159,7 @@ async function createBlogPost(req,res){
     ){
         console.error('Invalid image URL detected!');
         return res.status(400).json({
-            'message':'Invalid image URL!'
+            message:'Invalid image URL!'
         })
     }
 
@@ -177,7 +177,7 @@ async function createBlogPost(req,res){
         newBlog.save()
 
         return res.status(201).json({
-            'message':'Successfuly Created!',
+            message:'Successfuly Created!',
             'redirectUrl': '/blog/view/' + userData.uuid
         })
     }
@@ -295,6 +295,7 @@ async function postComment(req,res){
                 'message':'All fields are required for commenting!'
             })
         }
+
 
         if(req.user===undefined){  
             console.error('Unauthorized access attempt for commenting!'); 

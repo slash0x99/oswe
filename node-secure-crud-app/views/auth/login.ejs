@@ -295,7 +295,8 @@
                 });
 
                 if (!res.ok) {
-                    alert('Login failed!');
+                    let resData = await res.json();
+                    alert(resData.message || 'Login failed!');
                     return;
                 }
 
