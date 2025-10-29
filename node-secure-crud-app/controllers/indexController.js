@@ -12,5 +12,10 @@ function page429(req, res) {
     res.status(429).render('429');
 }
 
-module.exports={home,page404,page429};
+function page500(req, res) {
+    res.status(500).render('500');
+}
+
+
+module.exports={home,page404,page429,page500};
 

@@ -6,8 +6,7 @@ const User = require('../models/userModels');
 const { Op } = require('sequelize');
 const postTokenToMail = require('../middleware/postTokenToMail'); 
 const checkLoginLimit = require('../middleware/checkRateLimit');
-
-
+const {validateUserInput} = require('../middleware/checkUserInput');
 
 //GET REQUESTS=============================
 
@@ -100,8 +99,8 @@ async function loginPost(req,res){
 
     const {username,password} = req.body;
     const checkRateLimit = await checkLoginLimit(username)
-
-    if(checkRateLimit===5){
+    if(checkRateLimit.tries===5){
+        console.error('[-] Rate limit exceeded for user:', username);
         return res.status(409).json({
             message:'Rate limit my brother'
         })
@@ -192,10 +191,18 @@ async function registerPost(req,res){
         return res.status(400).json({ message: 'Invalid input type' });
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/gim;;
     if(!emailRegex.test(email)){
         return res.status(400).json({message:'Invalid email format'});
     }
+    
+    const validatedUsername = validateUserInput(username);
+
+    if(validatedUsername.status === 'error'){
+        console.error(validatedUsername.message);
+        return res.status(400).json({message:'Invalid characters in username'});
+    }
+    
 
     if(password !== confirmPassword){
         return res.status(400).json({message:'Passwords do not match!'});
@@ -257,7 +264,7 @@ async function resetPasswordPost(req,res){
         return res.status(400).json({ message: 'Invalid input type' });
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/gim;
     
 
     try{
@@ -335,7 +342,7 @@ async function resetTokenPost(req,res){
     }
     
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/gim;
 
     try{
         if(!emailRegex.test(email)){

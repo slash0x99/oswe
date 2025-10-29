@@ -7,6 +7,8 @@ const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
+const {sanitizeInput} = require('../middleware/checkUserInput');
+const validator = require('validator');
 
 
 //GET REQUESTS=============================
@@ -123,6 +125,8 @@ async function createBlogPost(req,res){
         return res.status(400).json({ message: 'Invalid input type' });
     }
 
+
+
     if(title.length<5){
         console.error('Title must be at least 5 characters long!');
         return res.status(400).json({
@@ -163,11 +167,13 @@ async function createBlogPost(req,res){
         })
     }
 
+    
+
 
     const userData = {
         'uuid':uuidv4(),
-        'title':sanitizedTitle,
-        'content':sanitizedContent,
+        'title':sanitizeInput(sanitizedTitle),
+        'content':sanitizeInput(sanitizedContent),
         'imageUrl':imageUrl,
         'author':author
     }
@@ -227,8 +233,8 @@ async function editBlogPost(req,res){
             })
         }
 
-        if (title) blog.title = sanitizedTitle;
-        if (content) blog.content = sanitizedContent;
+        if (title) blog.title = sanitizeInput(sanitizedTitle);
+        if (content) blog.content = sanitizeInput(sanitizedContent);
         if (imageUrl) blog.imageUrl = imageUrl;
 
         await blog.save();
@@ -282,12 +288,6 @@ async function postComment(req,res){
 
     try{
         const {text,uuid} = req.body
-        if(typeof text!=="string"
-            && typeof uuid!=="string"
-        ){
-            console.error('Invalid input type for commenting!');
-            return res.status(400).json({ message: 'Invalid input type' });
-        }
 
         if(!text || !uuid){
             console.error('All fields are required for commenting!');
@@ -295,6 +295,21 @@ async function postComment(req,res){
                 'message':'All fields are required for commenting!'
             })
         }
+
+
+        if(typeof text!=="string"
+            || typeof uuid!=="string"
+        ){
+            console.error('Invalid input type for commenting!');
+            return res.status(400).json({ message: 'Invalid input type' });
+        }
+
+        if (!validator.isUUID(uuid + '', 4)) { 
+            console.error('Invalid uuid format!');
+            return res.status(400).json({ message: 'Invalid uuid' });
+            }
+
+
 
 
         if(req.user===undefined){  
@@ -309,8 +324,10 @@ async function postComment(req,res){
 
 
 
+
+
         const comment = {
-            'text':text,
+            'text':sanitizeInput(text),
             'username':username,
             'commentId':uuidv4()
         }
@@ -352,11 +369,16 @@ async function deleteComment(req,res){
             })
         }
 
-        if(typeof uuid!=="string" && typeof commentId!=="string"){
+        if(typeof uuid!=="string" || typeof commentId!=="string"){
             console.error('Invalid input type for deleting a comment!');
             return res.status(400).json({ message: 'Invalid input type' });
         }
         
+        if (!validator.isUUID(uuid + '', 4)) { 
+            console.error('Invalid uuid format!');
+            return res.status(400).json({ message: 'Invalid uuid' });
+        }
+
 
         const blog = await Blog.findOne({'uuid':uuid})
         if(!blog){

@@ -577,8 +577,6 @@
 
             container.innerHTML = commentsList.map(comment => {
                 const initial = (comment.username || 'U').charAt(0).toUpperCase();
-                // təhlükəsizlik: comment.text kimi istifadə edilən server datalarını HTML-escape etmək məsləhətdir
-                // burada sadə escape funksiyası nümunəsi var:
                 function esc(s) {
                     if (s == null) return '';
                     return String(s)

@@ -39,6 +39,24 @@ app.use('/',blogRouter)
 app.use('/auth',authRouter)
 
 
+app.use((req, res, next) => {
+  res.status(404).redirect('/404');
+});
+
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  
+  // Rate limit error-u yoxlayın
+  if (err.status === 429) {
+    return res.status(429).redirect('/429');
+  }
+  
+  // Digər bütün errorlar
+  res.status(err.status || 500).redirect('/500'); 
+});
+
+
 //SQL CONNECTIONS
 
 //NOSQL

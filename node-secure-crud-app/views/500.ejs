@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Server Xətası</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d0a0a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(220, 20, 60, 0.1) 0%, transparent 50%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+        
+        .error-container {
+            background: rgba(26, 26, 26, 0.95);
+            border: 2px solid #dc143c;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(220, 20, 60, 0.4), 0 0 100px rgba(220, 20, 60, 0.2);
+            padding: 50px;
+            max-width: 600px;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #dc143c 0%, #8b0000 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            line-height: 1;
+            animation: glitch 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(220, 20, 60, 0.5);
+        }
+        
+        @keyframes glitch {
+            0%, 100% {
+                transform: translate(0);
+            }
+            20% {
+                transform: translate(-2px, 2px);
+            }
+            40% {
+                transform: translate(-2px, -2px);
+            }
+            60% {
+                transform: translate(2px, 2px);
+            }
+            80% {
+                transform: translate(2px, -2px);
+            }
+        }
+        
+        .error-icon {
+            font-size: 80px;
+            color: #dc143c;
+            margin-bottom: 20px;
+            animation: danger 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(220, 20, 60, 0.6));
+        }
+        
+        @keyframes danger {
+            0%, 100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 20px rgba(220, 20, 60, 0.6));
+            }
+            50% {
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 30px rgba(220, 20, 60, 0.9));
+            }
+        }
+        
+        .error-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 20px 0;
+            text-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
+        }
+        
+        .error-description {
+            font-size: 18px;
+            color: #cccccc;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .btn-custom {
+            background: linear-gradient(135deg, #dc143c 0%, #8b0000 100%);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(220, 20, 60, 0.3);
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(220, 20, 60, 0.6), 0 0 30px rgba(220, 20, 60, 0.4);
+            color: white;
+        }
+        
+        .btn-outline-custom {
+            background: transparent;
+            border: 2px solid #dc143c;
+            color: #dc143c;
+            padding: 13px 38px;
+            font-size: 18px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+        }
+        
+        .btn-outline-custom:hover {
+            background: #dc143c;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(220, 20, 60, 0.5);
+        }
+        
+        .error-details {
+            background: rgba(220, 20, 60, 0.1);
+            border: 1px solid #dc143c;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+        }
+        
+        .error-details h3 {
+            color: #dc143c;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .error-details ul {
+            color: #cccccc;
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .error-details li {
+            margin-bottom: 8px;
+        }
+        
+        .loading-dots {
+            display: inline-flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+        
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background: #dc143c;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <i class="fas fa-server error-icon"></i>
+        <h1 class="error-code">500</h1>
+        <h2 class="error-title">Server Xətası</h2>
+        <p class="error-description">
+            Üzr istəyirik, serverimiz hazırda istəyinizi işləyə bilmir. Texniki komandamız problemi həll etməyə çalışır.
+        </p>
+        
+        <div class="error-details">
+            <h3>
+                <i class="fas fa-info-circle"></i>
+                Nə edə bilərsiniz?
+            </h3>
+            <ul>
+                <li>Səhifəni yeniləyin</li>
+                <li>Bir neçə dəqiqə gözləyib yenidən cəhd edin</li>
+                <li>Ana səhifəyə qayıdın</li>
+                <li>Problem davam edərsə, dəstək komandası ilə əlaqə saxlayın</li>
+            </ul>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <a href="/" class="btn-custom">
+                <i class="fas fa-home"></i> Ana Səhifə
+            </a>
+            <button onclick="location.reload()" class="btn-outline-custom">
+                <i class="fas fa-redo"></i> Yenilə
+            </button>
+        </div>
+        
+        <div style="margin-top: 20px; color: #888; font-size: 14px;">
+            <span>Problem həll edilir</span>
+            <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

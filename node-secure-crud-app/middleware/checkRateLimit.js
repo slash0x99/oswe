@@ -3,44 +3,57 @@ const RateLimitCheck = require('../models/rateLimitCheckModels')
 const { sequelize } = require('../configs/mysql');
 
 async function checkLoginLimit(username) {
-  return await sequelize.transaction(async (t) => {
-    const user = await User.findOne({
-      where: { username },
-      transaction: t,
-      lock: t.LOCK.UPDATE
-    });
-    
-    if (!user){
-      console.log('User not found for rate limit check');
-      return null;
-    }
-    
-    let rateLimit = await RateLimitCheck.findOne({
-      where: { userId: user.id },
-      transaction: t,
-      lock: t.LOCK.UPDATE
-    });
-    
-    if (!rateLimit) {
-      rateLimit = await RateLimitCheck.create({
-        userId: user.id,
-        tries: 1,
-        blockExpireDate: new Date(Date.now() + 10 * 60 * 1000)
-      }, { transaction: t });
-    } else {
-      if (rateLimit.tries < 5) {
-        // increment() metodundan istifadə et - atomik əməliyyat
-        await rateLimit.increment('tries', { 
-          by: 1, 
-          transaction: t 
-        });
-        // yenilənmiş dəyəri yüklə
-        await rateLimit.reload({ transaction: t });
+  try{
+      return await sequelize.transaction(async (t) => {
+      const user = await User.findOne({
+        where: { username },
+        transaction: t,
+        lock: t.LOCK.UPDATE
+      });
+      
+      if (!user){
+        console.log('User not found for rate limit check');
+        return null;
       }
-    }
-    
-    return rateLimit;
-  });
+      
+      let rateLimit = await RateLimitCheck.findOne({
+        where: { userId: user.id },
+        transaction: t,
+        lock: t.LOCK.UPDATE
+      });
+      
+      if (!rateLimit) {
+        rateLimit = await RateLimitCheck.create({
+          userId: user.id,
+          tries: 1,
+          blockExpireDate: new Date(Date.now() + 3 * 60 * 1000)
+        }, { transaction: t });
+      } else if(rateLimit.tries < 5) {
+          await rateLimit.increment('tries', { 
+            by: 1, 
+            transaction: t 
+          });
+          await rateLimit.reload({ transaction: t });
+      }
+      else if(rateLimit.tries >= 5){
+          const currentTime = new Date();
+          if(currentTime > rateLimit.blockExpireDate){
+              rateLimit.tries = 1;
+              rateLimit.blockExpireDate = new Date(Date.now() + 3 * 60 * 1000);
+              await rateLimit.save({ transaction: t });
+          } else {
+              console.log('[-] User is currently blocked due to too many login attempts');
+          }
+      
+      }
+      return rateLimit;
+    });
+  }
+  catch(err){
+      console.error('Error in checkLoginLimit:', err);
+      throw err;
+  }
+  
 }
 
 
